@@ -75,7 +75,7 @@ class Perceptron:
             predictions.append(prediction)
         return predictions
 
-    def start(self):
+    def start(self, data):
         # Test the Perceptron algorithm on the sonar data_set
         seed(1)
         # evaluate algorithm

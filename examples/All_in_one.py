@@ -48,9 +48,9 @@ for i in range(len(sonar_all_data_set[0]) - 1):
 str_column_to_int(sonar_all_data_set, len(sonar_all_data_set[0]) - 1)
 
 options = {
-    "Perceptron": [Perceptron(sonar_all_data_set), True],
-    "DeepForward": [DeepFeedForward(mnist_data_X_train, mnist_data_y_train), True],
-    "Linear_regression": [LinearRegression(), False]
+    "Perceptron": [Perceptron(sonar_all_data_set), False, sonar_all_data_set],
+    "DeepForward": [DeepFeedForward(mnist_data_X_train, mnist_data_y_train, True), True, (mnist_data_X_test, mnist_data_y_test) ],
+    "Linear_regression": [LinearRegression(), False, sonar_all_data_set]
 }
 
 for val in options.values():

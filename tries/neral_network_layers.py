@@ -1,4 +1,5 @@
 import os
+from random import randint
 
 import tensorflow as tf
 from keras.models import Model
@@ -10,32 +11,39 @@ from sklearn.metrics import classification_report
 from matplotlib import pyplot as plt
 
 
-class DeepFeedForward:
-
-    def __init__(self, mnist_data_X_train, mnist_data_y_train, is_save_model):
-        self.data_set = None
-        self.model = None
-        self.X_train, self.y_train, = mnist_data_X_train, mnist_data_y_train
-        # self.X_train = self.X_train.reshape(60000, 784).astype("float32") / 255
-
-        self.model_path = "Resources/DeepForward_1"
-        self.define_model(is_save_model)
+class NNLayers:
+    def __init__(self):
+        self.data = []
+        self.label = []
+        range_random = [[0, 9, 1], [10, 19, 2], [20, 29, 3], [30, 39, 4], [40, 49, 5], [50, 59, 6]]
+        for i in range(1000):
+            for j in range(5):
+                temp = []
+                for k in range(2):
+                    temp.append(randint(range_random[j][0], range_random[j][1]))
+                self.data.append(np.array(temp))
+                self.label.append(range_random[j][2])
+        print(self.data)
+        self.data = np.array(self.data)
+        self.label = np.array(self.label)
+        self.model_path = 'model'
+        self.define_model(True)
 
     def define_model(self, is_save_model):
         if is_save_model or not os.path.exists(self.model_path):
             self.model = Sequential(name="DFF-Model")  # Model
-            self.model.add(Input(shape=(28,28), name='Input-Layer'))
-            self.model.add(Dense(128, activation='relu', name='Hidden-Layer-1',
-                                 kernel_initializer='HeNormal'))  # Hidden Layer, relu(x) = max(x, 0)
-            self.model.add(Dense(64, activation='relu', name='Hidden-Layer-2',
-                                 kernel_initializer='HeNormal'))  # Hidden Layer, relu(x) = max(x, 0)
-            self.model.add(Dense(32, activation='relu', name='Hidden-Layer-3',
-                                 kernel_initializer='HeNormal'))  # Hidden Layer, relu(x) = max(x, 0)
+            self.model.add(Input(shape=(2 ), name='Input-Layer'))
+            # self.model.add(Dense(128, activation='relu', name='Hidden-Layer-1',
+            #                      kernel_initializer='HeNormal'))  # Hidden Layer, relu(x) = max(x, 0)
+            # self.model.add(Dense(64, activation='relu', name='Hidden-Layer-2',
+            #                      kernel_initializer='HeNormal'))  # Hidden Layer, relu(x) = max(x, 0)
+            # self.model.add(Dense(32, activation='relu', name='Hidden-Layer-3',
+            #                      kernel_initializer='HeNormal'))  # Hidden Layer, relu(x) = max(x, 0)
             self.model.add(Dense(10, activation='softmax',
                                  name='Output-Layer'))  # Output Layer, softmax(x) = exp(x) / tf.reduce_sum(exp(x))
 
             self.model.compile(optimizer='adam',  # default='rmsprop', an algorithm to be used in backpropagation
-                               loss='categorical_crossentropy',
+                               loss='sparse_categorical_crossentropy',
                                # Loss function to be optimized. A string (name of loss function),
                                # or a tf.keras.losses.Loss instance.
                                metrics=['Accuracy'],
@@ -55,13 +63,13 @@ class DeepFeedForward:
                                # Defaults to 1. The number of batches to run during each tf.function call. Running
                                # multiple batches inside a single tf.function call can greatly improve performance on
                                # TPUs or small models with a large Python overhead.
-                          )
+                               )
             self.model.fit(
-                self.X_train,  # input data
-                self.y_train,  # target data
+                self.data,  # input data
+                self.label,  # target data
                 batch_size=10,
                 # Number of samples per gradient update. If unspecified, batch_size will default to 32.
-                epochs=5,
+                epochs=15,
                 # default=1, Number of epochs to train the model. An epoch is an iteration over the entire x and y
                 # data provided
                 verbose='auto',
@@ -114,10 +122,10 @@ class DeepFeedForward:
         else:
             self.model = load_model(self.model_path)
 
-    def start(self, data):
-        X_test, y_test = data
+        X_test = [[1, 5], [15, 16], [25, 21]]
+        y_test = [[1], [2], [3]]
         # X_test = X_test.reshape(10000, 784).astype("float32") / 255
-        pred_labels_tr = np.array(tf.math.argmax(self.model.predict(self.X_train), axis=1))
+        # pred_labels_tr = np.array(tf.math.argmax(self.model.predict(self.X_train), axis=1))
         # Predict class labels on a test data
         pred_labels_te = np.array(tf.math.argmax(self.model.predict(X_test), axis=1))
 
@@ -133,46 +141,45 @@ class DeepFeedForward:
         # print("  --Kernels (Weights): ", layer.get_weights()[0]) # kernels (weights)
         # print("  --Biases: ", layer.get_weights()[1]) # biases
 
-        print("")
-        print('---------- Evaluation on Training Data ----------')
-        print(classification_report(self.y_train, pred_labels_tr))
-        print("")
+        # print("")
+        # print('---------- Evaluation on Training Data ----------')
+        # print(classification_report(self.y_train, pred_labels_tr))
+        # print("")
 
         print('---------- Evaluation on Test Data ----------')
         print(classification_report(y_test, pred_labels_te))
         print("")
-        self.layer_output_visualization(data[0][0])
+        self.layer_output_visualization([[1, 2]])
+        self.layer_output_visualization([[20, 21]])
 
-    def layer_output_visualization(self, img):
+
+    def layer_output_visualization(self, x):
         self.model.summary()
-        # Input Image for Layer visualization
-        x = np.reshape(img, (1, 784))
-        plt.imshow(img)
-        # preprocess image
-        # img1 = image.load_img(r'H:\Images_for_AI_analysis\Resized\Quarter\Dyana_testing\check\bad(1).tif',)
-        # img = image.img_to_array(img1)
         model_layers = [layer.name for layer in self.model.layers]
         print('layer name : ', model_layers)
-        conv2d_1_output = Model(inputs=self.model.input, outputs=self.model.get_layer('Hidden-Layer-1').output)
+        # conv2d_1_output = Model(inputs=self.model.input, outputs=self.model.get_layer('Hidden-Layer-1').output)
         # conv2d_2_output = Model(inputs=self.model.input, outputs=self.model.get_layer('Hidden-Layer-2').output)
-        dense_1_output = Model(inputs=self.model.input, outputs=self.model.get_layer('Hidden-Layer-3').output)
+        # dense_1_output = Model(inputs=self.model.input, outputs=self.model.get_layer('Hidden-Layer-3').output)
         # dense_2_output = Model(inputs=self.model.input, outputs=self.model.get_layer('dense_2').output)
+        conv2d_1_output = Model(inputs=self.model.input, outputs=self.model.get_layer('Output-Layer').output)
         conv2d_1_features = conv2d_1_output.predict(x)
+        print(conv2d_1_features)
         # conv2d_2_features = conv2d_2_output.predict(x)
         print('First conv layer feature output shape : ', conv2d_1_features.shape)
+        print(self.model.layers[0].get_weights()[0])
         # print('First conv layer feature output shape : ', conv2d_2_features.shape)
-        plt.imshow(conv2d_1_features, cmap='gray')
-        fig = plt.figure(figsize=(14, 7))
-        columns = 8
-        rows = 4
-        # for i in range(columns * rows):
-        #     # img = mpimg.imread()
-        #     fig.add_subplot(rows, columns, i + 1)
-        #     plt.axis('off')
-        #     plt.title('filter' + str(i))
-        #     plt.imshow(conv2d_1_features[0, :, :, i], cmap='gray')
-        plt.show()
+        # plt.imshow(conv2d_1_features, cmap='gray')
         # fig = plt.figure(figsize=(14, 7))
+        # columns = 8
+        # rows = 4
+        # # for i in range(columns * rows):
+        # #     # img = mpimg.imread()
+        # #     fig.add_subplot(rows, columns, i + 1)
+        # #     plt.axis('off')
+        # #     plt.title('filter' + str(i))
+        # #     plt.imshow(conv2d_1_features[0, :, :, i], cmap='gray')
+        # plt.show()
+        # # fig = plt.figure(figsize=(14, 7))
         # columns = 8
         # rows = 4
         # for i in range(columns * rows):
@@ -183,3 +190,4 @@ class DeepFeedForward:
         #     plt.imshow(conv2d_2_features[0, :, :, i], cmap='gray')
         # plt.show()
 
+n = NNLayers()

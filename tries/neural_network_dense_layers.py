@@ -152,7 +152,6 @@ class NNLayers:
         self.layer_output_visualization([[1, 2]])
         self.layer_output_visualization([[20, 21]])
 
-
     def layer_output_visualization(self, x):
         self.model.summary()
         model_layers = [layer.name for layer in self.model.layers]
@@ -166,7 +165,7 @@ class NNLayers:
         print(conv2d_1_features)
         # conv2d_2_features = conv2d_2_output.predict(x)
         print('First conv layer feature output shape : ', conv2d_1_features.shape)
-        print(self.model.layers[0].get_weights()[0])
+        print(self.model.layers[0].get_weights())
         # print('First conv layer feature output shape : ', conv2d_2_features.shape)
         # plt.imshow(conv2d_1_features, cmap='gray')
         # fig = plt.figure(figsize=(14, 7))

@@ -1,4 +1,4 @@
-from exmples.Regression.LinearRegression import LinearRegression
+from old.exmples import LinearRegression
 import matplotlib.pyplot as plt
 import pandas as pd
 plt.rcParams['figure.figsize'] = [8, 5]

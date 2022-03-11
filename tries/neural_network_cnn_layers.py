@@ -7,16 +7,16 @@ import numpy as np
 import tensorflow
 from cv2 import cv2
 from keras_preprocessing import image
-
+from tensorflow import keras
 from matplotlib import pyplot as plt
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from tensorflow.python.keras import Sequential, Model
-from tensorflow.python.keras.layers import Conv2D, AveragePooling2D, Dense, Flatten
-from tensorflow.python.keras.models import load_model
-from tensorflow.python.ops.confusion_matrix import confusion_matrix
+from tensorflow.keras import Sequential, Model
+from tensorflow.keras.layers import Conv2D, AveragePooling2D, Dense, Flatten
+from tensorflow.keras.models import load_model
+
 import seaborn as sns
 
 
@@ -25,7 +25,7 @@ class CNNLayers:
         self.num_epochs = 100
         self.batch_size = 32
         self.callbacks_list = []
-        test_data_folder = r'D:\learning\AI_Learnings\tries\Resorces\synthetic_image'
+        test_data_folder = r'D:\learning\AI_Learnings\tries\images'
         test_data_files = self.recursive_file_filter(test_data_folder,
                                                      file_ext_filter=['.png'],
                                                      number_of_files=0)
@@ -36,11 +36,10 @@ class CNNLayers:
                                                                                 random_state=42)
         self.x_train = self.get_data_from_image(X_train)
         self.x_test = self.get_data_from_image(X_test)
-        self.x_validation = self.get_data_from_image(X_test)
+        self.x_validation = self.get_data_from_image(X_validation)
 
         self.model_path = 'model'
         self.sizes = [9, 9]
-        self.define_model(True)
 
     def get_data_from_image(self, all_file_path):
         data_read = np.array([])
@@ -85,23 +84,23 @@ class CNNLayers:
         self.classifier = Sequential()
         self.classifier.add(Conv2D(32, (3, 3), input_shape=(sizes[0], sizes[1], 1), activation='relu', name='c2d_1'))
         self.classifier.add(AveragePooling2D((2, 2), name='avg_1'))
-        self.classifier.add(Conv2D(64, (3, 3), activation='relu', name='c2d_2'))
-        self.classifier.add(AveragePooling2D((2, 2), name='avg_2'))
-        self.classifier.add(Conv2D(128, (3, 3), activation='relu', name='c2d_3'))
-        self.classifier.add(AveragePooling2D((2, 2), name='avg_3'))
-        # self.classifier.add(MaxPooling2D((2, 2), name='max_1'))  # if stride not given it equal to pool filter size
-        self.classifier.add(Conv2D(64, (3, 3), activation='relu', name='c2d_4'))
-        self.classifier.add(AveragePooling2D((2, 2), name='avg_4'))
+        # self.classifier.add(Conv2D(64, (3, 3), activation='relu', name='c2d_2'))
+        # self.classifier.add(AveragePooling2D((2, 2), name='avg_2'))
+        # self.classifier.add(Conv2D(128, (3, 3), activation='relu', name='c2d_3'))
+        # self.classifier.add(AveragePooling2D((2, 2), name='avg_3'))
+        # # self.classifier.add(MaxPooling2D((2, 2), name='max_1'))  # if stride not given it equal to pool filter size
+        # self.classifier.add(Conv2D(64, (3, 3), activation='relu', name='c2d_4'))
+        # self.classifier.add(AveragePooling2D((2, 2), name='avg_4'))
 
         self.classifier.add(Flatten())
         self.classifier.add(Dense(units=32, activation='relu', name='dns_1'))
         self.classifier.add(Dense(units=16, activation='relu', name='dns_2'))
         self.classifier.add(Dense(units=1, activation='sigmoid', name='dns_3'))
-        adam = tensorflow.keras.optimizers.Adam(lr=0.0001, beta_1=0.99, beta_2=0.999, epsilon=None, decay=0.0,
-                                                amsgrad=False, clipnorm=1)
+        adam = tensorflow.optimizers.Adam(lr=0.0001, beta_1=0.99, beta_2=0.999, epsilon=None, decay=0.0,
+                                          amsgrad=False, clipnorm=1)
         self.classifier.compile(optimizer=adam, loss='binary_crossentropy', metrics=['accuracy'])
 
-    def run_algorithm(self):
+    def run_algorithm(self, load_model):
         if load_model:
             self.load_and_process(self.model_path)
         else:
@@ -176,7 +175,7 @@ class CNNLayers:
             fig.add_subplot(rows, columns, i + 1)
             plt.axis('off')
             plt.title('filter' + str(i))
-            plt.imshow(conv2d_2_features[0, :, :, i], cmap='gray')
+            plt.imshow(conv2d_1_features[0, :, :, i], cmap='gray')
         plt.show()
 
     def algorithm_predict(self, test_x, test_y, labels, test_data_files=None):
@@ -229,3 +228,8 @@ class CNNLayers:
                 p_r = 'Positive' if fn.count('Positive') > 0 else 'Negative'
                 row = [fn, p_r, pr]
                 csv_h.writerow(row)
+
+
+if __name__ == '__main__':
+    c = CNNLayers()
+    c.run_algorithm(False)

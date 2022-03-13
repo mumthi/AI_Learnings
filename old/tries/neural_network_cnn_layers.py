@@ -25,7 +25,7 @@ class CNNLayers:
         self.num_epochs = 100
         self.batch_size = 32
         self.callbacks_list = []
-        test_data_folder = r'D:\learning\AI_Learnings\tries\images'
+        test_data_folder = r'images'
         test_data_files = self.recursive_file_filter(test_data_folder,
                                                      file_ext_filter=['.png'],
                                                      number_of_files=0)
@@ -82,7 +82,7 @@ class CNNLayers:
 
     def define_model(self, sizes):
         self.classifier = Sequential()
-        self.classifier.add(Conv2D(32, (3, 3), input_shape=(sizes[0], sizes[1], 1), activation='relu', name='c2d_1'))
+        self.classifier.add(Conv2D(32, (3, 3), input_shape=(sizes[0], sizes[1], 1), name='c2d_1'))
         self.classifier.add(AveragePooling2D((2, 2), name='avg_1'))
         # self.classifier.add(Conv2D(64, (3, 3), activation='relu', name='c2d_2'))
         # self.classifier.add(AveragePooling2D((2, 2), name='avg_2'))
@@ -122,7 +122,7 @@ class CNNLayers:
             self.classifier.save(model_path)
 
     def test_set_verifier(self):
-        ytesthat = self.classifier.predict((self.test_X, self.y_test))
+        ytesthat = self.classifier.predict((self.x_test, self.y_test))
         df = pd.DataFrame({
             'filename': self.file_name_val,
             'predict': ytesthat[:, 0],
@@ -142,40 +142,41 @@ class CNNLayers:
     def layer_output_visualization(self):
         self.classifier.summary()
         # Input Image for Layer visualization
-        img1 = image.load_img(R'D:\learning\AI_Learnings\tries\Resorces\synthetic_image\good\13.png')
-        plt.imshow(img1)
+        # img1 = image.load_img(r'images\good\13.png')
+        img = self.get_data_from_image([r'images\good\13.png'])
+        # plt.imshow(img)
         # preprocess image
-        img = image.img_to_array(img1)
+
         model_layers = [layer.name for layer in self.classifier.layers]
         print('layer name : ', model_layers)
         conv2d_1_output = Model(inputs=self.classifier.input, outputs=self.classifier.get_layer('c2d_1').output)
         avg_1_output = Model(inputs=self.classifier.input, outputs=self.classifier.get_layer('avg_1').output)
-        dense_1_output = Model(inputs=self.classifier.input, outputs=self.classifier.get_layer('c2d_3').output)
-        dense_2_output = Model(inputs=self.classifier.input, outputs=self.classifier.get_layer('c2d_4').output)
+        # dense_1_output = Model(inputs=self.classifier.input, outputs=self.classifier.get_layer('c2d_3').output)
+        # dense_2_output = Model(inputs=self.classifier.input, outputs=self.classifier.get_layer('c2d_4').output)
         conv2d_1_features = conv2d_1_output.predict(img)
         avg_1_features = avg_1_output.predict(img)
         print('First conv layer feature output shape : ', conv2d_1_features.shape)
         print('First conv layer feature output shape : ', avg_1_features.shape)
-        plt.imshow(conv2d_1_features[0, :, :, 4], cmap='gray')
+        # plt.imshow(conv2d_1_features[0, :, :, 4], cmap='gray')
         fig = plt.figure(figsize=(14, 7))
         columns = 8
-        rows = 4
-        for i in range(columns * rows):
+        rows = 8
+        for i in range(32):
             # img = mpimg.imread()
             fig.add_subplot(rows, columns, i + 1)
             plt.axis('off')
             plt.title('filter' + str(i))
             plt.imshow(conv2d_1_features[0, :, :, i], cmap='gray')
-        plt.show()
-        fig = plt.figure(figsize=(14, 7))
-        columns = 8
-        rows = 4
-        for i in range(columns * rows):
+        # plt.show()
+        # fig = plt.figure(figsize=(14, 7))
+
+        for i in range(32, 64):
             # img = mpimg.imread()
             fig.add_subplot(rows, columns, i + 1)
+            i = i- 32
             plt.axis('off')
             plt.title('filter' + str(i))
-            plt.imshow(conv2d_1_features[0, :, :, i], cmap='gray')
+            plt.imshow(avg_1_features[0, :, :, i], cmap='gray')
         plt.show()
 
     def algorithm_predict(self, test_x, test_y, labels, test_data_files=None):
@@ -233,3 +234,4 @@ class CNNLayers:
 if __name__ == '__main__':
     c = CNNLayers()
     c.run_algorithm(False)
+    c.layer_output_visualization()
